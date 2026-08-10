@@ -3,6 +3,7 @@
 # dependencies
 node_modules/
 .expo-test-export/
+.expo-web-test-export/
 
 # Expo
 .expo/
