@@ -6,19 +6,19 @@ Partindo da tela de lista de produtos da Loja Compre Bem construída em sala, ac
 
 **1. Qual prop nova você acrescentou ao `ProdutoItem`, e o que ela representa:**
 
-Acrescentei a prop `categoria`. Ela representa o tipo do produto/item exibido na lista,
+Acrescentei a prop `categoria`. Ela mostra o tipo do item que aparece na lista,
 por exemplo "Alimento básico", "Laticínio" ou "Kit de doação".
 
 **2. Qual estado novo você acrescentou, e o que muda quando ele é atualizado:**
 
-Acrescentei o estado `quantidadeSelecionada`. Ele guarda quantas unidades daquele item
-foram separadas pelo usuário. Quando o estado muda, o número exibido no card do item é atualizado.
+Acrescentei o estado `quantidade`. Ele guarda quantas unidades daquele item foram separadas.
+Quando aperto os botões de + ou -, o número na tela muda.
 
 **3. Por que você decidiu que cada dado era prop (vem de fora, só leitura) ou estado (o componente controla e muda com o tempo):**
 
-A `categoria` é prop porque vem do cadastro/lista de produtos e o componente apenas exibe essa informação.
-Já a `quantidadeSelecionada` é estado porque muda conforme o usuário pressiona os botões de aumentar ou diminuir,
-e cada `ProdutoItem` precisa controlar sua própria quantidade separadamente.
+A `categoria` é prop porque já vem no objeto do produto e o componente só precisa mostrar.
+A `quantidade` é estado porque muda enquanto o usuário usa a tela, e cada item precisa
+ter sua própria contagem.
 
 **4. Cole aqui o código da sua extensão do `ProdutoItem`:**
 
@@ -28,29 +28,32 @@ import { View, Text, Button } from 'react-native';
 
 function ProdutoItem({ produto, categoria }) {
   const [favorito, setFavorito] = useState(false);
-  const [quantidadeSelecionada, setQuantidadeSelecionada] = useState(0);
+  const [quantidade, setQuantidade] = useState(0);
+
+  function aumentarQuantidade() {
+    setQuantidade(quantidade + 1);
+  }
+
+  function diminuirQuantidade() {
+    if (quantidade > 0) {
+      setQuantidade(quantidade - 1);
+    }
+  }
 
   return (
-    <View style={styles.item}>
-      <View style={styles.info}>
-        <Text style={styles.nome}>{produto.nome}</Text>
-        <Text style={styles.categoria}>{categoria}</Text>
-        <Text style={styles.preco}>{produto.preco}</Text>
+    <View style={styles.card}>
+      <Text style={styles.nomeProduto}>{produto.nome}</Text>
+      <Text>Categoria: {categoria}</Text>
+      <Text>Estoque: {produto.estoque}</Text>
+      <Text>Local: {produto.local}</Text>
 
-        <Text>Quantidade separada: {quantidadeSelecionada}</Text>
+      <Text>Quantidade separada: {quantidade}</Text>
 
-        <Button
-          title="-"
-          onPress={() => setQuantidadeSelecionada(Math.max(0, quantidadeSelecionada - 1))}
-        />
-        <Button
-          title="+"
-          onPress={() => setQuantidadeSelecionada(quantidadeSelecionada + 1)}
-        />
-      </View>
+      <Button title="-" onPress={diminuirQuantidade} />
+      <Button title="+" onPress={aumentarQuantidade} />
 
       <Button
-        title={favorito ? '♥' : '♡'}
+        title={favorito ? 'Salvo' : 'Salvar'}
         onPress={() => setFavorito(!favorito)}
       />
     </View>

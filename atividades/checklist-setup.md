@@ -16,11 +16,11 @@
 
 **O que o Instituto faz hoje (sem o app) para lidar com o problema:**
 
-O Instituto Mão Amiga controla doações, estoque e pontos de coleta/distribuição manualmente,
-usando planilhas, papel e comunicação por mensagens. Com isso, a equipe não tem uma visão
-rápida e atualizada do estoque por ponto nem das famílias já atendidas.
+Hoje o Instituto Mão Amiga faz o controle das doações e do estoque de forma manual,
+usando planilhas, papel e mensagens. Isso dificulta saber rápido o que tem disponível
+em cada ponto de coleta ou distribuição.
 
 **Demanda entregue pelo Instituto nesta aula (o que o app precisa resolver):**
 
-O app precisa ajudar a registrar doações recebidas, acompanhar o estoque disponível,
-visualizar pontos de coleta/distribuição e apoiar a organização do atendimento às famílias.
+O app precisa ajudar no registro das doações, na consulta do estoque e na organização
+dos pontos de coleta e distribuição.

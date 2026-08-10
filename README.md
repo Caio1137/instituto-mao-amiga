@@ -1,10 +1,12 @@
 # Instituto Mao Amiga
 
-Aplicativo mobile em Expo/React Native para apoiar o controle de doacoes, estoque e pontos de coleta/distribuicao do Instituto Mao Amiga.
+Projeto da disciplina de Construção de Software.
+
+A ideia do app é ajudar o Instituto Mão Amiga a ter um controle inicial de doações, estoque e pontos de distribuição.
 
 ## Atividades
 
-Os documentos preenchidos das aulas estao na pasta `atividades/`.
+Os arquivos das atividades estão na pasta `atividades/`.
 
 ## Como executar
 
@@ -13,4 +15,8 @@ npm install
 npm start
 ```
 
-Depois, use o Expo Go no celular para ler o QR Code exibido no terminal.
+Também dá para testar no navegador com:
+
+```bash
+npm run web
+```

@@ -6,17 +6,16 @@
 
 **Escopo do problema do Instituto Mão Amiga que este projeto resolve (o mesmo para toda a turma):**
 
-O problema é a falta de controle centralizado e atualizado sobre doações, estoque,
-pontos de coleta/distribuição e famílias atendidas pelo banco de alimentos comunitário.
-Hoje essas informações ficam espalhadas entre planilhas, papel e mensagens.
+O problema é que as informações de doações, estoque e pontos de coleta/distribuição
+ficam espalhadas em planilhas, anotações e mensagens. Com isso, fica mais difícil
+ter uma visão atualizada do que existe em cada local.
 
 ## Escopo do projeto
 
 **Confirmação de entendimento do escopo único (Issue #02) — em suas palavras, o que você vai construir:**
 
-Vou construir um aplicativo mobile em React Native/Expo para apoiar o Instituto Mão Amiga
-no registro de doações, acompanhamento de estoque e visualização dos pontos de coleta e
-distribuição, mantendo o escopo comum definido para a turma.
+Vou construir um app mobile simples em React Native/Expo para listar itens recebidos,
+mostrar estoque e indicar o local onde os produtos estão disponíveis.
 
 ## Repositório GitHub pessoal
 
