@@ -20,7 +20,7 @@ distribuição, mantendo o escopo comum definido para a turma.
 
 ## Repositório GitHub pessoal
 
-**Link do repositório:** https://github.com/SEU-USUARIO/instituto-mao-amiga
+**Link do repositório:** https://github.com/Caio1137/instituto-mao-amiga
 
 - [ ] Repositório criado na conta pessoal do GitHub (nome sugerido: `instituto-mao-amiga`) — pendente de publicação no GitHub
 - [x] README mínimo (nome do app + uma frase sobre o problema resolvido)
