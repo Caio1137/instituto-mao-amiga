@@ -14,13 +14,14 @@ ter uma visão atualizada do que existe em cada local.
 
 **Confirmação de entendimento do escopo único (Issue #02) — em suas palavras, o que você vai construir:**
 
-Vou construir um app mobile simples em React Native/Expo para listar itens recebidos,
-mostrar estoque e indicar o local onde os produtos estão disponíveis.
+Vou construir um app mobile simples em React Native/Expo para listar pontos de
+coleta e distribuicao, mostrar os dados de cada ponto e ajudar o Instituto a
+consultar onde as doacoes podem ser recebidas ou distribuidas.
 
 ## Repositório GitHub pessoal
 
 **Link do repositório:** https://github.com/Caio1137/instituto-mao-amiga
 
-- [ ] Repositório criado na conta pessoal do GitHub (nome sugerido: `instituto-mao-amiga`) — pendente de publicação no GitHub
+- [x] Repositório criado na conta pessoal do GitHub (nome sugerido: `instituto-mao-amiga`)
 - [x] README mínimo (nome do app + uma frase sobre o problema resolvido)
 - [x] Primeiro commit realizado, já com o Hello World do Expo rodando

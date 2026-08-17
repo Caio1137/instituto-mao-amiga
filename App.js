@@ -1,69 +1,72 @@
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
-import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-const produtos = [
+const pontos = [
   {
     id: '1',
-    nome: 'Arroz tipo 1',
-    categoria: 'Alimento basico',
-    estoque: '24 kg',
-    local: 'Sede do Instituto',
+    nome: 'Sede Central',
+    endereco: 'Rua das Flores, 120 - Centro',
+    horario: 'Segunda a sexta, das 8h as 17h',
+    atendimento: 'Recebe alimentos, roupas e produtos de higiene.',
   },
   {
     id: '2',
-    nome: 'Feijao carioca',
-    categoria: 'Alimento basico',
-    estoque: '18 kg',
-    local: 'Ponto Vila Nova',
+    nome: 'Ponto Vila Nova',
+    endereco: 'Avenida Esperanca, 455 - Vila Nova',
+    horario: 'Tercas e quintas, das 13h as 18h',
+    atendimento: 'Distribui cestas basicas para familias cadastradas.',
   },
   {
     id: '3',
-    nome: 'Leite integral',
-    categoria: 'Laticinio',
-    estoque: '32 unidades',
-    local: 'Ponto Centro',
-  },
-  {
-    id: '4',
-    nome: 'Cesta emergencial',
-    categoria: 'Kit de doacao',
-    estoque: '7 kits',
-    local: 'Ponto Jardim Sul',
+    nome: 'Ponto Jardim Sul',
+    endereco: 'Rua Comunitaria, 88 - Jardim Sul',
+    horario: 'Sabados, das 9h as 14h',
+    atendimento: 'Recebe doacoes de alimentos nao pereciveis e cobertores.',
   },
 ];
 
-function ProdutoItem({ produto, categoria }) {
-  const [favorito, setFavorito] = useState(false);
-  const [quantidade, setQuantidade] = useState(0);
-
-  function aumentarQuantidade() {
-    setQuantidade(quantidade + 1);
-  }
-
-  function diminuirQuantidade() {
-    if (quantidade > 0) {
-      setQuantidade(quantidade - 1);
-    }
-  }
-
+function PontoItem({ ponto }) {
   return (
     <View style={styles.card}>
-      <Text style={styles.nomeProduto}>{produto.nome}</Text>
-      <Text>Categoria: {categoria}</Text>
-      <Text>Estoque: {produto.estoque}</Text>
-      <Text>Local: {produto.local}</Text>
+      <Text style={styles.nomePonto}>{ponto.nome}</Text>
+      <Text style={styles.info}>Endereco: {ponto.endereco}</Text>
+      <Text style={styles.info}>Horario: {ponto.horario}</Text>
+      <Text style={styles.info}>Atendimento: {ponto.atendimento}</Text>
+    </View>
+  );
+}
 
-      <Text style={styles.quantidade}>Quantidade separada: {quantidade}</Text>
+function DetalhePonto({ ponto }) {
+  return (
+    <View style={styles.detalhe}>
+      <Text style={styles.nomeDetalhe}>{ponto.nome}</Text>
+      <Text style={styles.rotulo}>Endereco</Text>
+      <Text style={styles.textoDetalhe}>{ponto.endereco}</Text>
+      <Text style={styles.rotulo}>Dias e horarios</Text>
+      <Text style={styles.textoDetalhe}>{ponto.horario}</Text>
+      <Text style={styles.rotulo}>O que recebe ou distribui</Text>
+      <Text style={styles.textoDetalhe}>{ponto.atendimento}</Text>
+    </View>
+  );
+}
 
-      <View style={styles.botoes}>
-        <Button title="-" onPress={diminuirQuantidade} />
-        <Button title="+" onPress={aumentarQuantidade} />
-        <Button
-          title={favorito ? 'Salvo' : 'Salvar'}
-          onPress={() => setFavorito(!favorito)}
-        />
-      </View>
+function TelaListaPontos() {
+  return (
+    <View>
+      <Text style={styles.secao}>Pontos de coleta e distribuicao</Text>
+
+      {pontos.map((ponto) => (
+        <PontoItem key={ponto.id} ponto={ponto} />
+      ))}
+    </View>
+  );
+}
+
+function TelaDetalhePonto() {
+  return (
+    <View>
+      <Text style={styles.secao}>Detalhe do ponto em destaque</Text>
+      <DetalhePonto ponto={pontos[0]} />
     </View>
   );
 }
@@ -72,26 +75,18 @@ export default function App() {
   return (
     <ScrollView style={styles.container}>
       <StatusBar style="auto" />
-
       <Text style={styles.titulo}>Instituto Mao Amiga</Text>
       <Text style={styles.subtitulo}>
-        App simples para acompanhar doacoes e estoque dos pontos de distribuicao.
+        App simples para consultar pontos de coleta e distribuicao.
       </Text>
 
       <View style={styles.resumo}>
-        <Text style={styles.resumoTexto}>Itens cadastrados: {produtos.length}</Text>
-        <Text style={styles.resumoTexto}>Tela feita com componente, prop e estado</Text>
+        <Text style={styles.resumoTexto}>Pontos cadastrados: {pontos.length}</Text>
+        <Text style={styles.resumoTexto}>Tela feita com componente e prop</Text>
       </View>
 
-      <Text style={styles.secao}>Lista de itens</Text>
-
-      {produtos.map((produto) => (
-        <ProdutoItem
-          key={produto.id}
-          produto={produto}
-          categoria={produto.categoria}
-        />
-      ))}
+      <TelaListaPontos />
+      <TelaDetalhePonto />
     </ScrollView>
   );
 }
@@ -128,6 +123,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
+    marginTop: 4,
   },
   card: {
     backgroundColor: '#FFFFFF',
@@ -137,18 +133,39 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#DDD',
   },
-  nomeProduto: {
+  nomePonto: {
     fontSize: 17,
     fontWeight: 'bold',
     marginBottom: 6,
   },
-  quantidade: {
-    marginTop: 10,
-    marginBottom: 8,
-    fontWeight: 'bold',
+  info: {
+    fontSize: 14,
+    marginBottom: 4,
+    color: '#333',
   },
-  botoes: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  detalhe: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 6,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#C8E6C9',
+  },
+  nomeDetalhe: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    color: '#1B5E20',
+  },
+  rotulo: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginTop: 10,
+    color: '#2E7D32',
+  },
+  textoDetalhe: {
+    fontSize: 15,
+    marginTop: 4,
+    color: '#333',
   },
 });
