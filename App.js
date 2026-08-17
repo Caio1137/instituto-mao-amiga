@@ -1,5 +1,9 @@
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+const Stack = createNativeStackNavigator();
 
 const pontos = [
   {
@@ -25,14 +29,15 @@ const pontos = [
   },
 ];
 
-function PontoItem({ ponto }) {
+function PontoItem({ ponto, onPress }) {
   return (
-    <View style={styles.card}>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
       <Text style={styles.nomePonto}>{ponto.nome}</Text>
       <Text style={styles.info}>Endereco: {ponto.endereco}</Text>
       <Text style={styles.info}>Horario: {ponto.horario}</Text>
       <Text style={styles.info}>Atendimento: {ponto.atendimento}</Text>
-    </View>
+      <Text style={styles.acao}>Ver detalhes</Text>
+    </TouchableOpacity>
   );
 }
 
@@ -50,28 +55,7 @@ function DetalhePonto({ ponto }) {
   );
 }
 
-function TelaListaPontos() {
-  return (
-    <View>
-      <Text style={styles.secao}>Pontos de coleta e distribuicao</Text>
-
-      {pontos.map((ponto) => (
-        <PontoItem key={ponto.id} ponto={ponto} />
-      ))}
-    </View>
-  );
-}
-
-function TelaDetalhePonto() {
-  return (
-    <View>
-      <Text style={styles.secao}>Detalhe do ponto em destaque</Text>
-      <DetalhePonto ponto={pontos[0]} />
-    </View>
-  );
-}
-
-export default function App() {
+function TelaListaPontos({ navigation }) {
   return (
     <ScrollView style={styles.container}>
       <StatusBar style="auto" />
@@ -82,12 +66,51 @@ export default function App() {
 
       <View style={styles.resumo}>
         <Text style={styles.resumoTexto}>Pontos cadastrados: {pontos.length}</Text>
-        <Text style={styles.resumoTexto}>Tela feita com componente e prop</Text>
+        <Text style={styles.resumoTexto}>Toque em um ponto para ver os detalhes</Text>
       </View>
 
-      <TelaListaPontos />
-      <TelaDetalhePonto />
+      <Text style={styles.secao}>Pontos de coleta e distribuicao</Text>
+
+      {pontos.map((ponto) => (
+        <PontoItem
+          key={ponto.id}
+          ponto={ponto}
+          onPress={() => navigation.navigate('DetalhePonto', { pontoId: ponto.id })}
+        />
+      ))}
     </ScrollView>
+  );
+}
+
+function TelaDetalhePonto({ route }) {
+  const { pontoId } = route.params;
+  const ponto = pontos.find((item) => item.id === pontoId) ?? pontos[0];
+
+  return (
+    <ScrollView style={styles.container}>
+      <StatusBar style="auto" />
+      <Text style={styles.secao}>Detalhe do ponto</Text>
+      <DetalhePonto ponto={ponto} />
+    </ScrollView>
+  );
+}
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="ListaPontos">
+        <Stack.Screen
+          name="ListaPontos"
+          component={TelaListaPontos}
+          options={{ title: 'Pontos do Instituto' }}
+        />
+        <Stack.Screen
+          name="DetalhePonto"
+          component={TelaDetalhePonto}
+          options={{ title: 'Detalhe do ponto' }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 
@@ -132,6 +155,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: '#DDD',
+  },
+  acao: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginTop: 8,
+    color: '#1B5E20',
   },
   nomePonto: {
     fontSize: 17,
