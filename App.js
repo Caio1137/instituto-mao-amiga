@@ -1,10 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import {
   Keyboard,
+  KeyboardAvoidingView,
   FlatList,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,6 +18,7 @@ import {
 } from 'react-native';
 
 const Stack = createNativeStackNavigator();
+const CHAVE_DOACAO = '@instituto_mao_amiga:ultima_doacao';
 
 const pontos = [
   {
@@ -147,6 +152,26 @@ function TelaCadastroDoacao() {
   const [erro, setErro] = useState('');
   const [mensagem, setMensagem] = useState('');
 
+  useEffect(() => {
+    async function carregarDoacaoSalva() {
+      try {
+        const cadastroSalvo = await AsyncStorage.getItem(CHAVE_DOACAO);
+
+        if (cadastroSalvo) {
+          const doacao = JSON.parse(cadastroSalvo);
+          setTipoItem(doacao.tipoItem ?? '');
+          setQuantidade(doacao.quantidade ?? '');
+          setPontoDestino(doacao.pontoDestino ?? '');
+          setMensagem('Dados da ultima doacao recuperados neste aparelho.');
+        }
+      } catch (error) {
+        setErro('Nao foi possivel recuperar a doacao salva.');
+      }
+    }
+
+    carregarDoacaoSalva();
+  }, []);
+
   function atualizarTipoItem(texto) {
     setTipoItem(texto);
     setErro('');
@@ -170,7 +195,7 @@ function TelaCadastroDoacao() {
     setMensagem('');
   }
 
-  function validarFormulario() {
+  async function validarFormulario() {
     if (tipoItem.trim() === '') {
       setErro('Informe o tipo do item que sera doado.');
       return;
@@ -186,61 +211,79 @@ function TelaCadastroDoacao() {
       return;
     }
 
-    setErro('');
-    setMensagem('Campos conferidos. Nesta etapa, a doacao ainda nao e salva.');
-    Keyboard.dismiss();
+    const doacao = {
+      tipoItem: tipoItem.trim(),
+      quantidade: quantidade.trim(),
+      pontoDestino: pontoDestino.trim(),
+    };
+
+    try {
+      await AsyncStorage.setItem(CHAVE_DOACAO, JSON.stringify(doacao));
+      setErro('');
+      setMensagem('Doacao salva neste aparelho.');
+      Keyboard.dismiss();
+    } catch (error) {
+      setErro('Nao foi possivel salvar a doacao. Tente novamente.');
+    }
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.conteudo}
-      keyboardShouldPersistTaps="handled"
-    >
-      <StatusBar style="auto" />
-      <Text style={styles.tituloFormulario}>Cadastro de doacao</Text>
-      <Text style={styles.descricaoFormulario}>
-        Preencha os dados para registrar a intencao de doacao para um ponto do Instituto.
-      </Text>
+    <SafeAreaView style={styles.areaSegura} edges={['bottom', 'left', 'right']}>
+      <KeyboardAvoidingView
+        style={styles.areaSegura}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={styles.conteudo}
+          keyboardShouldPersistTaps="handled"
+        >
+          <StatusBar style="auto" />
+          <Text style={styles.tituloFormulario}>Cadastro de doacao</Text>
+          <Text style={styles.descricaoFormulario}>
+            Preencha os dados para registrar a intencao de doacao para um ponto do Instituto.
+          </Text>
 
-      <View style={styles.formulario}>
-        <Text style={styles.rotuloCampo}>Tipo do item</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ex.: arroz, roupa ou produto de higiene"
-          value={tipoItem}
-          onChangeText={atualizarTipoItem}
-          returnKeyType="next"
-        />
+          <View style={styles.formulario}>
+            <Text style={styles.rotuloCampo}>Tipo do item</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ex.: arroz, roupa ou produto de higiene"
+              value={tipoItem}
+              onChangeText={atualizarTipoItem}
+              returnKeyType="next"
+            />
 
-        <Text style={styles.rotuloCampo}>Quantidade</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ex.: 10"
-          value={quantidade}
-          onChangeText={atualizarQuantidade}
-          keyboardType="number-pad"
-          returnKeyType="next"
-        />
+            <Text style={styles.rotuloCampo}>Quantidade</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ex.: 10"
+              value={quantidade}
+              onChangeText={atualizarQuantidade}
+              keyboardType="number-pad"
+              returnKeyType="next"
+            />
 
-        <Text style={styles.rotuloCampo}>Ponto de destino</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ex.: Sede Central"
-          value={pontoDestino}
-          onChangeText={atualizarPontoDestino}
-          returnKeyType="done"
-          onSubmitEditing={validarFormulario}
-        />
+            <Text style={styles.rotuloCampo}>Ponto de destino</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ex.: Sede Central"
+              value={pontoDestino}
+              onChangeText={atualizarPontoDestino}
+              returnKeyType="done"
+              onSubmitEditing={validarFormulario}
+            />
 
-        {erro !== '' && <Text style={styles.erro}>{erro}</Text>}
-        {mensagem !== '' && <Text style={styles.mensagem}>{mensagem}</Text>}
+            {erro !== '' && <Text style={styles.erro}>{erro}</Text>}
+            {mensagem !== '' && <Text style={styles.mensagem}>{mensagem}</Text>}
 
-        <TouchableOpacity style={styles.botaoPrincipal} onPress={validarFormulario} activeOpacity={0.8}>
-          <Text style={styles.textoBotaoPrincipal}>Validar cadastro</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+            <TouchableOpacity style={styles.botaoPrincipal} onPress={validarFormulario} activeOpacity={0.8}>
+              <Text style={styles.textoBotaoPrincipal}>Salvar doacao</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -269,6 +312,9 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  areaSegura: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     backgroundColor: '#F4F4F4',
@@ -303,7 +349,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#1B5E20',
     borderRadius: 6,
+    justifyContent: 'center',
     marginBottom: 18,
+    minHeight: 44,
     padding: 13,
   },
   textoBotaoPrincipal: {
