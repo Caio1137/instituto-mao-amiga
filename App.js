@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import {
+  Alert,
+  FlatList,
   Keyboard,
   KeyboardAvoidingView,
-  FlatList,
   Platform,
   ScrollView,
   StyleSheet,
@@ -16,9 +16,14 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import {
+  atualizarDoacao,
+  excluirDoacao,
+  listarDoacoes,
+  salvarDoacao,
+} from './doacoesStorage';
 
 const Stack = createNativeStackNavigator();
-const CHAVE_DOACAO = '@instituto_mao_amiga:ultima_doacao';
 
 const pontos = [
   {
@@ -52,7 +57,7 @@ const pontos = [
   {
     id: '5',
     nome: 'Centro Comunitario Norte',
-    endereco: 'Rua dos Ipês, 730 - Jardim Norte',
+    endereco: 'Rua dos Ipes, 730 - Jardim Norte',
     horario: 'Sextas, das 9h as 16h',
     atendimento: 'Recebe roupas de adulto e infantil em boas condicoes.',
   },
@@ -64,6 +69,16 @@ const pontos = [
     atendimento: 'Entrega cestas basicas e recebe leite longa vida.',
   },
 ];
+
+function formatarData(data) {
+  return new Date(data).toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
 
 function PontoItem({ ponto, onPress }) {
   return (
@@ -87,6 +102,39 @@ function DetalhePonto({ ponto }) {
       <Text style={styles.textoDetalhe}>{ponto.horario}</Text>
       <Text style={styles.rotulo}>O que recebe ou distribui</Text>
       <Text style={styles.textoDetalhe}>{ponto.atendimento}</Text>
+    </View>
+  );
+}
+
+const DoacaoItem = React.memo(function DoacaoItem({ doacao, onAbrir }) {
+  return (
+    <TouchableOpacity style={styles.itemDoacao} onPress={() => onAbrir(doacao)} activeOpacity={0.8}>
+      <Text style={styles.nomeDoacao}>{doacao.tipoItem}</Text>
+      <Text style={styles.info}>Quantidade: {doacao.quantidade}</Text>
+      <Text style={styles.info}>Destino: {doacao.pontoDestino}</Text>
+      <Text style={styles.dataDoacao}>{formatarData(doacao.criadoEm)}</Text>
+    </TouchableOpacity>
+  );
+});
+
+function ResumoDoacoes({ doacoes, totaisPorTipo }) {
+  if (doacoes.length === 0) {
+    return (
+      <View style={styles.resumo}>
+        <Text style={styles.resumoTexto}>Ainda nao ha doacoes registradas.</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.resumo}>
+      <Text style={styles.tituloResumo}>Resumo das doacoes</Text>
+      <Text style={styles.resumoTexto}>Total de registros: {doacoes.length}</Text>
+      {totaisPorTipo.map((total) => (
+        <Text style={styles.resumoTexto} key={total.chave}>
+          {total.tipoItem}: {total.quantidade} unidades em {total.doacoes} doacao(oes)
+        </Text>
+      ))}
     </View>
   );
 }
@@ -125,6 +173,14 @@ function TelaListaPontos({ navigation }) {
             <Text style={styles.textoBotaoPrincipal}>Registrar doacao</Text>
           </TouchableOpacity>
 
+          <TouchableOpacity
+            style={styles.botaoSecundario}
+            onPress={() => navigation.navigate('HistoricoDoacoes')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.textoBotaoSecundario}>Minhas doacoes</Text>
+          </TouchableOpacity>
+
           <Text style={styles.secao}>Pontos de coleta e distribuicao</Text>
         </>
       }
@@ -145,37 +201,184 @@ function TelaDetalhePonto({ route }) {
   );
 }
 
-function TelaCadastroDoacao() {
-  const [tipoItem, setTipoItem] = useState('');
-  const [quantidade, setQuantidade] = useState('');
-  const [pontoDestino, setPontoDestino] = useState('');
-  const [erro, setErro] = useState('');
-  const [mensagem, setMensagem] = useState('');
+function TelaHistoricoDoacoes({ navigation, doacoes }) {
+  const [filtro, setFiltro] = useState('');
 
-  useEffect(() => {
-    async function carregarDoacaoSalva() {
-      try {
-        const cadastroSalvo = await AsyncStorage.getItem(CHAVE_DOACAO);
+  const doacoesFiltradas = useMemo(() => {
+    const textoFiltro = filtro.trim().toLowerCase();
 
-        if (cadastroSalvo) {
-          const doacao = JSON.parse(cadastroSalvo);
-          setTipoItem(doacao.tipoItem ?? '');
-          setQuantidade(doacao.quantidade ?? '');
-          setPontoDestino(doacao.pontoDestino ?? '');
-          setMensagem('Dados da ultima doacao recuperados neste aparelho.');
-        }
-      } catch (error) {
-        setErro('Nao foi possivel recuperar a doacao salva.');
+    return doacoes.filter((doacao) => (
+      doacao.tipoItem.toLowerCase().includes(textoFiltro)
+    ));
+  }, [doacoes, filtro]);
+
+  const totaisPorTipo = useMemo(() => {
+    const totais = {};
+
+    doacoes.forEach((doacao) => {
+      const chave = doacao.tipoItem.trim().toLowerCase();
+
+      if (!totais[chave]) {
+        totais[chave] = {
+          chave,
+          tipoItem: doacao.tipoItem,
+          quantidade: 0,
+          doacoes: 0,
+        };
       }
+
+      totais[chave].quantidade += Number(doacao.quantidade);
+      totais[chave].doacoes += 1;
+    });
+
+    return Object.values(totais).sort((primeiro, segundo) => (
+      segundo.quantidade - primeiro.quantidade
+    ));
+  }, [doacoes]);
+
+  const abrirDoacao = useCallback((doacao) => {
+    navigation.navigate('DetalheDoacao', { doacao });
+  }, [navigation]);
+
+  const renderizarDoacao = useCallback(({ item }) => (
+    <DoacaoItem doacao={item} onAbrir={abrirDoacao} />
+  ), [abrirDoacao]);
+
+  function renderizarEstadoVazio() {
+    if (doacoes.length === 0) {
+      return (
+        <View style={styles.estadoVazio}>
+          <Text style={styles.textoVazio}>Nenhuma doacao registrada ainda.</Text>
+          <TouchableOpacity
+            style={styles.botaoPrincipal}
+            onPress={() => navigation.navigate('CadastroDoacao')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.textoBotaoPrincipal}>Registrar primeira doacao</Text>
+          </TouchableOpacity>
+        </View>
+      );
     }
 
-    carregarDoacaoSalva();
-  }, []);
+    return (
+      <View style={styles.estadoVazio}>
+        <Text style={styles.textoVazio}>Nenhuma doacao encontrada para "{filtro}".</Text>
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.areaSegura} edges={['bottom', 'left', 'right']}>
+      <KeyboardAvoidingView
+        style={styles.areaSegura}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <FlatList
+          style={styles.historico}
+          contentContainerStyle={[
+            styles.conteudoHistorico,
+            doacoesFiltradas.length === 0 && styles.conteudoHistoricoVazio,
+          ]}
+          data={doacoesFiltradas}
+          keyExtractor={(doacao) => doacao.id}
+          renderItem={renderizarDoacao}
+          keyboardShouldPersistTaps="handled"
+          ListHeaderComponent={
+            <>
+              <Text style={styles.tituloHistorico}>Minhas doacoes</Text>
+              <ResumoDoacoes doacoes={doacoes} totaisPorTipo={totaisPorTipo} />
+              <TextInput
+                style={styles.inputBusca}
+                placeholder="Filtrar por tipo de item"
+                value={filtro}
+                onChangeText={setFiltro}
+                returnKeyType="done"
+              />
+            </>
+          }
+          ListEmptyComponent={renderizarEstadoVazio}
+        />
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+function TelaDetalheDoacao({ navigation, route, doacoes, onExcluirDoacao }) {
+  const doacaoRecebida = route.params.doacao;
+  const doacao = doacoes.find((item) => item.id === doacaoRecebida.id) ?? doacaoRecebida;
+
+  function confirmarExclusao() {
+    Alert.alert(
+      'Excluir doacao',
+      'Deseja realmente excluir esta doacao?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await onExcluirDoacao(doacao.id);
+              navigation.goBack();
+            } catch (error) {
+              Alert.alert('Erro', 'Nao foi possivel excluir a doacao.');
+            }
+          },
+        },
+      ],
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.areaSegura} edges={['bottom', 'left', 'right']}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.conteudo}>
+        <Text style={styles.secao}>Detalhe da doacao</Text>
+        <View style={styles.detalhe}>
+          <Text style={styles.rotulo}>Tipo do item</Text>
+          <Text style={styles.textoDetalhe}>{doacao.tipoItem}</Text>
+          <Text style={styles.rotulo}>Quantidade</Text>
+          <Text style={styles.textoDetalhe}>{doacao.quantidade}</Text>
+          <Text style={styles.rotulo}>Ponto de destino</Text>
+          <Text style={styles.textoDetalhe}>{doacao.pontoDestino}</Text>
+          <Text style={styles.rotulo}>Registrada em</Text>
+          <Text style={styles.textoDetalhe}>{formatarData(doacao.criadoEm)}</Text>
+        </View>
+
+        <TouchableOpacity
+          style={styles.botaoSecundario}
+          onPress={() => navigation.navigate('CadastroDoacao', { doacao })}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.textoBotaoSecundario}>Editar doacao</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.botaoPerigo} onPress={confirmarExclusao} activeOpacity={0.8}>
+          <Text style={styles.textoBotaoPrincipal}>Excluir doacao</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+function TelaCadastroDoacao({ navigation, route, onSalvarDoacao, onAtualizarDoacao }) {
+  const doacaoEmEdicao = route.params?.doacao;
+  const [tipoItem, setTipoItem] = useState(doacaoEmEdicao?.tipoItem ?? '');
+  const [quantidade, setQuantidade] = useState(
+    doacaoEmEdicao ? String(doacaoEmEdicao.quantidade) : '',
+  );
+  const [pontoDestino, setPontoDestino] = useState(doacaoEmEdicao?.pontoDestino ?? '');
+  const [erro, setErro] = useState('');
+
+  useEffect(() => {
+    setTipoItem(doacaoEmEdicao?.tipoItem ?? '');
+    setQuantidade(doacaoEmEdicao ? String(doacaoEmEdicao.quantidade) : '');
+    setPontoDestino(doacaoEmEdicao?.pontoDestino ?? '');
+    setErro('');
+  }, [doacaoEmEdicao]);
 
   function atualizarTipoItem(texto) {
     setTipoItem(texto);
     setErro('');
-    setMensagem('');
   }
 
   function atualizarQuantidade(texto) {
@@ -185,17 +388,14 @@ function TelaCadastroDoacao() {
     } else {
       setErro('A quantidade deve conter somente numeros.');
     }
-
-    setMensagem('');
   }
 
   function atualizarPontoDestino(texto) {
     setPontoDestino(texto);
     setErro('');
-    setMensagem('');
   }
 
-  async function validarFormulario() {
+  async function salvarCadastro() {
     if (tipoItem.trim() === '') {
       setErro('Informe o tipo do item que sera doado.');
       return;
@@ -211,16 +411,21 @@ function TelaCadastroDoacao() {
       return;
     }
 
-    const doacao = {
+    const dadosDaDoacao = {
       tipoItem: tipoItem.trim(),
       quantidade: quantidade.trim(),
       pontoDestino: pontoDestino.trim(),
     };
 
     try {
-      await AsyncStorage.setItem(CHAVE_DOACAO, JSON.stringify(doacao));
-      setErro('');
-      setMensagem('Doacao salva neste aparelho.');
+      if (doacaoEmEdicao) {
+        await onAtualizarDoacao({ ...doacaoEmEdicao, ...dadosDaDoacao });
+        navigation.goBack();
+      } else {
+        await onSalvarDoacao(dadosDaDoacao);
+        navigation.replace('HistoricoDoacoes');
+      }
+
       Keyboard.dismiss();
     } catch (error) {
       setErro('Nao foi possivel salvar a doacao. Tente novamente.');
@@ -239,9 +444,13 @@ function TelaCadastroDoacao() {
           keyboardShouldPersistTaps="handled"
         >
           <StatusBar style="auto" />
-          <Text style={styles.tituloFormulario}>Cadastro de doacao</Text>
+          <Text style={styles.tituloFormulario}>
+            {doacaoEmEdicao ? 'Editar doacao' : 'Cadastro de doacao'}
+          </Text>
           <Text style={styles.descricaoFormulario}>
-            Preencha os dados para registrar a intencao de doacao para um ponto do Instituto.
+            {doacaoEmEdicao
+              ? 'Altere os dados necessarios e salve a doacao.'
+              : 'Preencha os dados para registrar uma doacao para um ponto do Instituto.'}
           </Text>
 
           <View style={styles.formulario}>
@@ -271,15 +480,26 @@ function TelaCadastroDoacao() {
               value={pontoDestino}
               onChangeText={atualizarPontoDestino}
               returnKeyType="done"
-              onSubmitEditing={validarFormulario}
+              onSubmitEditing={salvarCadastro}
             />
 
             {erro !== '' && <Text style={styles.erro}>{erro}</Text>}
-            {mensagem !== '' && <Text style={styles.mensagem}>{mensagem}</Text>}
 
-            <TouchableOpacity style={styles.botaoPrincipal} onPress={validarFormulario} activeOpacity={0.8}>
-              <Text style={styles.textoBotaoPrincipal}>Salvar doacao</Text>
+            <TouchableOpacity style={styles.botaoPrincipal} onPress={salvarCadastro} activeOpacity={0.8}>
+              <Text style={styles.textoBotaoPrincipal}>
+                {doacaoEmEdicao ? 'Salvar alteracoes' : 'Salvar doacao'}
+              </Text>
             </TouchableOpacity>
+
+            {doacaoEmEdicao && (
+              <TouchableOpacity
+                style={styles.botaoSecundario}
+                onPress={() => navigation.goBack()}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.textoBotaoSecundario}>Cancelar edicao</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -288,6 +508,34 @@ function TelaCadastroDoacao() {
 }
 
 export default function App() {
+  const [doacoes, setDoacoes] = useState([]);
+
+  const carregarDoacoes = useCallback(async () => {
+    const lista = await listarDoacoes();
+    setDoacoes(lista);
+  }, []);
+
+  useEffect(() => {
+    carregarDoacoes().catch(() => setDoacoes([]));
+  }, [carregarDoacoes]);
+
+  async function registrarDoacao(dadosDaDoacao) {
+    const novaDoacao = await salvarDoacao(dadosDaDoacao);
+    await carregarDoacoes();
+    return novaDoacao;
+  }
+
+  async function editarDoacao(doacao) {
+    const doacaoAtualizada = await atualizarDoacao(doacao);
+    await carregarDoacoes();
+    return doacaoAtualizada;
+  }
+
+  async function removerDoacao(id) {
+    await excluirDoacao(id);
+    await carregarDoacoes();
+  }
+
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="ListaPontos">
@@ -302,10 +550,37 @@ export default function App() {
           options={{ title: 'Detalhe do ponto' }}
         />
         <Stack.Screen
+          name="HistoricoDoacoes"
+          options={{ title: 'Minhas doacoes' }}
+        >
+          {(props) => <TelaHistoricoDoacoes {...props} doacoes={doacoes} />}
+        </Stack.Screen>
+        <Stack.Screen
+          name="DetalheDoacao"
+          options={{ title: 'Detalhe da doacao' }}
+        >
+          {(props) => (
+            <TelaDetalheDoacao
+              {...props}
+              doacoes={doacoes}
+              onExcluirDoacao={removerDoacao}
+            />
+          )}
+        </Stack.Screen>
+        <Stack.Screen
           name="CadastroDoacao"
-          component={TelaCadastroDoacao}
-          options={{ title: 'Cadastro de doacao' }}
-        />
+          options={({ route }) => ({
+            title: route.params?.doacao ? 'Editar doacao' : 'Cadastro de doacao',
+          })}
+        >
+          {(props) => (
+            <TelaCadastroDoacao
+              {...props}
+              onSalvarDoacao={registrarDoacao}
+              onAtualizarDoacao={editarDoacao}
+            />
+          )}
+        </Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -324,22 +599,28 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   titulo: {
+    color: '#1B5E20',
     fontSize: 26,
     fontWeight: 'bold',
-    marginTop: 32,
     marginBottom: 8,
-    color: '#1B5E20',
+    marginTop: 32,
   },
   subtitulo: {
+    color: '#444',
     fontSize: 15,
     marginBottom: 16,
-    color: '#444',
   },
   resumo: {
     backgroundColor: '#FFFFFF',
-    padding: 12,
     borderRadius: 6,
     marginBottom: 18,
+    padding: 12,
+  },
+  tituloResumo: {
+    color: '#1B5E20',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 6,
   },
   resumoTexto: {
     fontSize: 14,
@@ -350,14 +631,42 @@ const styles = StyleSheet.create({
     backgroundColor: '#1B5E20',
     borderRadius: 6,
     justifyContent: 'center',
-    marginBottom: 18,
+    marginBottom: 12,
     minHeight: 44,
-    padding: 13,
+    paddingHorizontal: 13,
+    paddingVertical: 10,
   },
   textoBotaoPrincipal: {
     color: '#FFFFFF',
     fontSize: 15,
     fontWeight: 'bold',
+  },
+  botaoSecundario: {
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderColor: '#1B5E20',
+    borderRadius: 6,
+    borderWidth: 1,
+    justifyContent: 'center',
+    marginBottom: 12,
+    minHeight: 44,
+    paddingHorizontal: 13,
+    paddingVertical: 10,
+  },
+  textoBotaoSecundario: {
+    color: '#1B5E20',
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
+  botaoPerigo: {
+    alignItems: 'center',
+    backgroundColor: '#C62828',
+    borderRadius: 6,
+    justifyContent: 'center',
+    marginBottom: 12,
+    minHeight: 44,
+    paddingHorizontal: 13,
+    paddingVertical: 10,
   },
   secao: {
     fontSize: 18,
@@ -367,17 +676,18 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#FFFFFF',
-    padding: 12,
-    borderRadius: 6,
-    marginBottom: 12,
-    borderWidth: 1,
     borderColor: '#DDD',
+    borderRadius: 6,
+    borderWidth: 1,
+    marginBottom: 12,
+    minHeight: 44,
+    padding: 12,
   },
   acao: {
+    color: '#1B5E20',
     fontSize: 14,
     fontWeight: 'bold',
     marginTop: 8,
-    color: '#1B5E20',
   },
   nomePonto: {
     fontSize: 17,
@@ -385,41 +695,41 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   info: {
+    color: '#333',
     fontSize: 14,
     marginBottom: 4,
-    color: '#333',
   },
   detalhe: {
     backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderRadius: 6,
-    marginBottom: 24,
-    borderWidth: 1,
     borderColor: '#C8E6C9',
+    borderRadius: 6,
+    borderWidth: 1,
+    marginBottom: 18,
+    padding: 16,
   },
   nomeDetalhe: {
+    color: '#1B5E20',
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 12,
-    color: '#1B5E20',
   },
   rotulo: {
+    color: '#2E7D32',
     fontSize: 14,
     fontWeight: 'bold',
     marginTop: 10,
-    color: '#2E7D32',
   },
   textoDetalhe: {
+    color: '#333',
     fontSize: 15,
     marginTop: 4,
-    color: '#333',
   },
   tituloFormulario: {
     color: '#1B5E20',
     fontSize: 24,
     fontWeight: 'bold',
-    marginTop: 18,
     marginBottom: 8,
+    marginTop: 18,
   },
   descricaoFormulario: {
     color: '#444',
@@ -447,6 +757,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 1,
     fontSize: 15,
+    minHeight: 44,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
@@ -455,9 +766,64 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 14,
   },
-  mensagem: {
-    color: '#2E7D32',
-    fontSize: 14,
-    marginTop: 14,
+  historico: {
+    backgroundColor: '#F4F4F4',
+    flex: 1,
+  },
+  conteudoHistorico: {
+    padding: 16,
+    paddingBottom: 24,
+  },
+  conteudoHistoricoVazio: {
+    flexGrow: 1,
+  },
+  tituloHistorico: {
+    color: '#1B5E20',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    marginTop: 18,
+  },
+  inputBusca: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#BDBDBD',
+    borderRadius: 5,
+    borderWidth: 1,
+    fontSize: 15,
+    marginBottom: 14,
+    minHeight: 44,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  itemDoacao: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#C8E6C9',
+    borderRadius: 6,
+    borderWidth: 1,
+    marginBottom: 10,
+    minHeight: 44,
+    padding: 12,
+  },
+  nomeDoacao: {
+    color: '#1B5E20',
+    fontSize: 17,
+    fontWeight: 'bold',
+    marginBottom: 6,
+  },
+  dataDoacao: {
+    color: '#666',
+    fontSize: 13,
+    marginTop: 4,
+  },
+  estadoVazio: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 28,
+  },
+  textoVazio: {
+    color: '#555',
+    fontSize: 15,
+    marginBottom: 14,
+    textAlign: 'center',
   },
 });
