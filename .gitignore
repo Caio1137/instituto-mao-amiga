@@ -5,6 +5,11 @@ node_modules/
 .expo-test-export/
 .expo-web-test-export/
 
+# local assistant settings
+.claude/
+AGENTS.md
+CLAUDE.md
+
 # Expo
 .expo/
 dist/
