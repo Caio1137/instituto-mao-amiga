@@ -45,3 +45,7 @@ npm run web
 5. Abra uma doação para editar seus dados ou excluí-la com confirmação.
 
 Os registros ficam armazenados localmente no aparelho e permanecem disponíveis ao reabrir o aplicativo.
+
+## Demonstração
+
+O roteiro sugerido para apresentar os principais fluxos do aplicativo está em [docs/roteiro-demonstracao.md](docs/roteiro-demonstracao.md).
