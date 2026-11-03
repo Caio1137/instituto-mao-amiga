@@ -2,6 +2,8 @@
 
 Tempo previsto: até 3 minutos.
 
+Antes de começar, ligue a API dos pontos (`cd api` e `./mvnw spring-boot:run`) e confira em http://localhost:8085/swagger-ui.html que `GET /pontos` responde.
+
 1. Abrir o aplicativo e acessar **Minhas doações**. Mostrar o estado inicial e o caminho para cadastrar uma doação.
 2. Registrar uma doação de teste, por exemplo: arroz, 5 unidades, Sede Central. Em seguida, mostrar o registro no histórico.
 3. Registrar mais duas doações de tipos diferentes e apresentar o resumo com a quantidade total por tipo de item.
