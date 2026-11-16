@@ -1,6 +1,6 @@
 package br.com.institutomaoamiga.api.dto;
 
-public record ErroResponse(
+public record ErroResponseDTO(
         int status,
         String mensagem
 ) {

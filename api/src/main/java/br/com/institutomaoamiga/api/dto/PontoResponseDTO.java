@@ -2,24 +2,24 @@ package br.com.institutomaoamiga.api.dto;
 
 import br.com.institutomaoamiga.api.entity.Ponto;
 
-public record PontoResponse(
-        Long id,
+import java.util.UUID;
+
+public record PontoResponseDTO(
+        UUID id,
         String nome,
         String endereco,
+        String bairro,
         String horario,
-        String atendimento,
-        Double latitude,
-        Double longitude
+        String tipo
 ) {
-    public static PontoResponse de(Ponto ponto) {
-        return new PontoResponse(
+    public static PontoResponseDTO toDto(Ponto ponto) {
+        return new PontoResponseDTO(
                 ponto.getId(),
                 ponto.getNome(),
                 ponto.getEndereco(),
+                ponto.getBairro(),
                 ponto.getHorario(),
-                ponto.getAtendimento(),
-                ponto.getLatitude(),
-                ponto.getLongitude()
+                ponto.getTipo()
         );
     }
 }

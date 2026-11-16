@@ -19,14 +19,9 @@ Aplicativo mobile para apoiar o registro e o acompanhamento de doações destina
 
 ## Onde está a API
 
-A API dos pontos fica neste mesmo repositório, na pasta [`api/`](api/). Ela é um projeto Spring Boot separado do app.
+A API fica neste mesmo repositório, na pasta [`api/`](api/). Ela é um projeto Spring Boot separado do app. Endpoints, regras e prints do Swagger estão em [`api/README.md`](api/README.md).
 
-| Método | Rota | Descrição |
-| --- | --- | --- |
-| GET | `/pontos` | Lista paginada (`page`, `size`, `sort`). 20 por página por padrão, no máximo 50. Resposta no formato `{ content, page }`. |
-| GET | `/pontos/{id}` | Devolve um ponto. Responde 404 quando o id não existe. |
-
-Ao subir, a API carrega 9 pontos em Goiânia com coordenadas reais tiradas do OpenStreetMap. A documentação fica em http://localhost:8085/swagger-ui.html.
+A documentação interativa fica em http://localhost:8085/swagger-ui.html.
 
 ## Como executar
 
