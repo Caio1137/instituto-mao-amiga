@@ -6,6 +6,7 @@ import DetalheDoacaoScreen from './src/screens/DetalheDoacaoScreen';
 import DetalhePontoScreen from './src/screens/DetalhePontoScreen';
 import HistoricoDoacoesScreen from './src/screens/HistoricoDoacoesScreen';
 import ListaPontosScreen from './src/screens/ListaPontosScreen';
+import MeusPontosScreen from './src/screens/MeusPontosScreen';
 import type { RootStackParamList } from './src/types/navigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -30,6 +31,11 @@ export default function App() {
           options={({ route }) => ({
             title: route.params?.pontoId ? 'Editar ponto' : 'Cadastrar ponto',
           })}
+        />
+        <Stack.Screen
+          name="MeusPontos"
+          component={MeusPontosScreen}
+          options={{ title: 'Meus pontos' }}
         />
         <Stack.Screen
           name="HistoricoDoacoes"

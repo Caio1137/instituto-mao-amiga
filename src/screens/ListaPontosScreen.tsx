@@ -4,6 +4,7 @@ import type { ListRenderItem } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import PontoItem from '../components/PontoItem';
+import { useFavoritos } from '../hooks/useFavoritos';
 import { usePaginacao } from '../hooks/usePaginacao';
 import { buscarPaginaPontos } from '../services/pontosService';
 import { styles } from '../styles/styles';
@@ -15,6 +16,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'ListaPontos'>;
 export default function ListaPontosScreen({ navigation, route }: Props) {
   const [busca, setBusca] = useState('');
   const lista = usePaginacao(buscarPaginaPontos, busca);
+  const { favoritos, erroFavoritos, alternar } = useFavoritos();
   const mensagem = route.params?.mensagem;
 
   // A mensagem de sucesso (ponto cadastrado/excluído) some depois de alguns segundos.
@@ -28,9 +30,16 @@ export default function ListaPontosScreen({ navigation, route }: Props) {
     navigation.navigate('DetalhePonto', { pontoId: ponto.id });
   }, [navigation]);
 
+  const alternarFavorito = useCallback((ponto: Ponto) => alternar(ponto.id), [alternar]);
+
   const renderizarPonto = useCallback<ListRenderItem<Ponto>>(({ item }) => (
-    <PontoItem ponto={item} onAbrir={abrirPonto} />
-  ), [abrirPonto]);
+    <PontoItem
+      ponto={item}
+      favorito={favoritos.includes(item.id)}
+      onAbrir={abrirPonto}
+      onAlternarFavorito={alternarFavorito}
+    />
+  ), [abrirPonto, alternarFavorito, favoritos]);
 
   function renderizarVazio() {
     if (lista.carregando) {
@@ -93,6 +102,7 @@ export default function ListaPontosScreen({ navigation, route }: Props) {
       style={styles.container}
       contentContainerStyle={styles.conteudo}
       data={lista.itens}
+      extraData={favoritos}
       keyExtractor={(ponto) => ponto.id}
       renderItem={renderizarPonto}
       keyboardShouldPersistTaps="handled"
@@ -123,6 +133,16 @@ export default function ListaPontosScreen({ navigation, route }: Props) {
           >
             <Text style={styles.textoBotaoSecundario}>Minhas doações</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            accessibilityRole="button"
+            style={styles.botaoSecundario}
+            onPress={() => navigation.navigate('MeusPontos')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.textoBotaoSecundario}>Meus pontos ({favoritos.length})</Text>
+          </TouchableOpacity>
+          {erroFavoritos !== '' && <Text accessibilityRole="alert" style={styles.erro}>{erroFavoritos}</Text>}
 
           <Text style={styles.secao}>Pontos de coleta e distribuição</Text>
           {mensagem && <Text accessibilityRole="alert" style={styles.sucesso}>{mensagem}</Text>}

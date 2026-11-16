@@ -8,7 +8,3 @@ export async function lerJSON<T>(chave: string): Promise<T | null> {
 export async function salvarJSON<T>(chave: string, valor: T): Promise<void> {
   await AsyncStorage.setItem(chave, JSON.stringify(valor));
 }
-
-export async function removerItem(chave: string): Promise<void> {
-  await AsyncStorage.removeItem(chave);
-}

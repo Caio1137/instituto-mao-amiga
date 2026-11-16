@@ -5,10 +5,12 @@ import type { Ponto } from '../types/ponto';
 
 type Props = {
   ponto: Ponto;
+  favorito: boolean;
   onAbrir: (ponto: Ponto) => void;
+  onAlternarFavorito: (ponto: Ponto) => void;
 };
 
-function PontoItem({ ponto, onAbrir }: Props) {
+function PontoItem({ ponto, favorito, onAbrir, onAlternarFavorito }: Props) {
   return (
     <View style={styles.card}>
       <TouchableOpacity
@@ -25,6 +27,18 @@ function PontoItem({ ponto, onAbrir }: Props) {
         <Text style={[styles.etiquetaTipo, ponto.tipo === 'coleta' ? styles.etiquetaColeta : styles.etiquetaDistribuicao]}>
           {ponto.tipo}
         </Text>
+      </TouchableOpacity>
+
+      {/* Área de toque de 44x44 (styles.botaoFavorito). */}
+      <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel={favorito ? `Desmarcar ${ponto.nome} dos favoritos` : `Favoritar ${ponto.nome}`}
+        accessibilityState={{ selected: favorito }}
+        style={styles.botaoFavorito}
+        onPress={() => onAlternarFavorito(ponto)}
+        activeOpacity={0.7}
+      >
+        <Text style={[styles.iconeFavorito, favorito && styles.iconeFavoritoAtivo]}>{favorito ? '♥' : '♡'}</Text>
       </TouchableOpacity>
     </View>
   );

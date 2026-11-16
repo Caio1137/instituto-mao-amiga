@@ -24,22 +24,6 @@ export const styles = StyleSheet.create({
     fontSize: 15,
     marginBottom: 16,
   },
-  resumo: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 6,
-    marginBottom: 18,
-    padding: 12,
-  },
-  tituloResumo: {
-    color: '#1B5E20',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 6,
-  },
-  resumoTexto: {
-    fontSize: 14,
-    marginBottom: 4,
-  },
   botaoPrincipal: {
     alignItems: 'center',
     backgroundColor: '#1B5E20',
@@ -102,6 +86,20 @@ export const styles = StyleSheet.create({
   cardConteudo: {
     flex: 1,
   },
+  botaoFavorito: {
+    alignItems: 'center',
+    height: 44,
+    justifyContent: 'center',
+    marginLeft: 8,
+    width: 44,
+  },
+  iconeFavorito: {
+    color: '#9E9E9E',
+    fontSize: 26,
+  },
+  iconeFavoritoAtivo: {
+    color: '#C62828',
+  },
   etiquetaTipo: {
     alignSelf: 'flex-start',
     borderRadius: 4,
@@ -128,12 +126,6 @@ export const styles = StyleSheet.create({
     color: '#555',
     fontSize: 14,
     textAlign: 'center',
-  },
-  acao: {
-    color: '#1B5E20',
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginTop: 8,
   },
   nomePonto: {
     fontSize: 17,
@@ -169,13 +161,6 @@ export const styles = StyleSheet.create({
     color: '#333',
     fontSize: 15,
     marginTop: 4,
-  },
-  tituloFormulario: {
-    color: '#1B5E20',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    marginTop: 18,
   },
   descricaoFormulario: {
     color: '#444',
@@ -219,9 +204,6 @@ export const styles = StyleSheet.create({
   conteudoHistorico: {
     padding: 16,
     paddingBottom: 24,
-  },
-  conteudoHistoricoVazio: {
-    flexGrow: 1,
   },
   tituloHistorico: {
     color: '#1B5E20',
