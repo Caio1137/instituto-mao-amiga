@@ -6,6 +6,8 @@ import br.com.institutomaoamiga.api.entity.Ponto;
 import br.com.institutomaoamiga.api.exception.RecursoNaoEncontradoException;
 import br.com.institutomaoamiga.api.repository.PontoRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,11 @@ public class PontoService {
         return pontoRepository.findAll(Sort.by("nome")).stream()
                 .map(PontoResponseDTO::toDto)
                 .toList();
+    }
+
+    public Page<PontoResponseDTO> buscarPorFiltro(String filtro, Pageable pageable) {
+        String texto = filtro == null ? "" : filtro.trim();
+        return pontoRepository.buscarPorFiltro(texto, pageable).map(PontoResponseDTO::toDto);
     }
 
     public PontoResponseDTO buscarPorId(UUID id) {

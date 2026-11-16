@@ -1,6 +1,7 @@
 package br.com.institutomaoamiga.api.exception;
 
 import br.com.institutomaoamiga.api.dto.ErroResponseDTO;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,10 +39,13 @@ public class ApiExceptionHandler {
         return erro(HttpStatus.BAD_REQUEST, "Valor inválido para o parâmetro " + ex.getName() + ".");
     }
 
-    /** sort=campoQueNaoExiste na URL. */
-    @ExceptionHandler(PropertyReferenceException.class)
-    public ResponseEntity<ErroResponseDTO> ordenacaoInvalida(PropertyReferenceException ex) {
-        return erro(HttpStatus.BAD_REQUEST, "Campo de ordenação inválido: " + ex.getPropertyName() + ".");
+    /**
+     * sort=campoQueNaoExiste na URL. Nas consultas com @Query o Hibernate só percebe o campo
+     * errado ao montar o ORDER BY e lança InvalidDataAccessApiUsageException.
+     */
+    @ExceptionHandler({PropertyReferenceException.class, InvalidDataAccessApiUsageException.class})
+    public ResponseEntity<ErroResponseDTO> ordenacaoInvalida(Exception ex) {
+        return erro(HttpStatus.BAD_REQUEST, "Campo de ordenação inválido. Use um dos campos da resposta, ex.: sort=nome,asc.");
     }
 
     @ExceptionHandler(RecursoNaoEncontradoException.class)

@@ -31,6 +31,7 @@ Campos do ponto: `id` (UUID), `nome`, `endereco`, `bairro`, `horario` (texto, ex
 | Método | URL | Resposta |
 | --- | --- | --- |
 | GET | `http://localhost:8085/api/v1/pontos` | 200 com a lista de pontos ordenada por nome |
+| GET | `http://localhost:8085/api/v1/pontos/filtro?filtro=&page=0&size=10` | 200 com uma página de pontos (ver busca paginada) |
 | GET | `http://localhost:8085/api/v1/pontos/{id}` | 200 com o ponto, 404 se o id não existe |
 | POST | `http://localhost:8085/api/v1/pontos` | 201 com o ponto criado, 400 se faltar campo |
 | PUT | `http://localhost:8085/api/v1/pontos/{id}` | 200 com o ponto alterado, 400 se faltar campo, 404 se o id não existe |
@@ -55,6 +56,100 @@ Regras:
 - `@CrossOrigin(origins = "*")` no controller libera o acesso do app (navegador e celular).
 - Erros têm o formato `{ "status": 404, "mensagem": "Ponto não encontrado: ..." }`.
 - `CargaInicialPontos` cadastra os pontos em Goiânia só quando a tabela está vazia, então reiniciar a API não duplica nada.
+
+### Busca paginada
+
+`GET http://localhost:8085/api/v1/pontos/filtro?filtro=...&page=0&size=10` devolve um `Page<PontoResponseDTO>`.
+
+- O `filtro` procura no **nome** ou no **bairro**, sem diferenciar maiúsculas (`@Query` com `LOWER(...) LIKE` no `PontoRepository`).
+- Sem `filtro` (ou vazio), devolve todos os pontos paginados.
+- Padrão: 10 itens por página ordenados por nome (`@PageableDefault(size = 10, sort = "nome")`). `sort=bairro,asc` na URL troca a ordem. No máximo 50 por página.
+- A resposta vem no formato `content` + `page` (`spring.data.web.pageable.serialization-mode=via_dto`).
+- A carga inicial tem 29 pontos, então a lista sem filtro tem 3 páginas de 10.
+
+Para caber aqui, as listas de 10 pontos foram cortadas nos dois primeiros itens.
+
+**1. Sem filtro** — `GET /api/v1/pontos/filtro?page=0&size=10`
+
+```json
+{
+  "content": [
+    {
+      "id": "4cf3ddcc-a4fb-410d-a582-362390251e47",
+      "nome": "Centro Comunitário Jardim Goiás",
+      "endereco": "Parque Flamboyant, Rua 46",
+      "bairro": "Jardim Goiás",
+      "horario": "Sex, 9h às 16h",
+      "tipo": "coleta"
+    },
+    {
+      "id": "b4641ebf-3112-4702-a68d-6fbbcb92550e",
+      "nome": "Espaço Areião",
+      "endereco": "Parque Areião, Av. Areião",
+      "bairro": "Setor Pedro Ludovico",
+      "horario": "Seg e Qua, 14h às 18h",
+      "tipo": "distribuição"
+    },
+    "... mais 8 pontos"
+  ],
+  "page": { "size": 10, "number": 0, "totalElements": 29, "totalPages": 3 }
+}
+```
+
+**2. Filtrando por bairro** — `GET /api/v1/pontos/filtro?filtro=setor oeste&page=0&size=10`
+
+```json
+{
+  "content": [
+    {
+      "id": "de3c7c38-49b7-4287-9f6d-542c26499ef0",
+      "nome": "Ponto Lago das Rosas",
+      "endereco": "Parque Lago das Rosas, Av. Anhanguera",
+      "bairro": "Setor Oeste",
+      "horario": "Ter e Qui, 13h às 18h",
+      "tipo": "distribuição"
+    },
+    {
+      "id": "11e88cb5-7135-466b-86fd-24070f17d263",
+      "nome": "Sede Central",
+      "endereco": "Bosque dos Buritis, Rua 1, s/n",
+      "bairro": "Setor Oeste",
+      "horario": "Seg a Sex, 8h às 17h",
+      "tipo": "coleta"
+    }
+  ],
+  "page": { "size": 10, "number": 0, "totalElements": 2, "totalPages": 1 }
+}
+```
+
+**3. Segunda página** — `GET /api/v1/pontos/filtro?page=1&size=10`
+
+```json
+{
+  "content": [
+    {
+      "id": "f45101ce-9218-4893-9b5f-88c2c5a5972d",
+      "nome": "Ponto Jardim Guanabara",
+      "endereco": "Av. Jardim Guanabara, Centro Comunitário",
+      "bairro": "Jardim Guanabara",
+      "horario": "Sáb, 9h às 13h",
+      "tipo": "distribuição"
+    },
+    {
+      "id": "c666b62d-f19b-4efd-bdb6-471fc6da62bc",
+      "nome": "Ponto Jardim Novo Mundo",
+      "endereco": "Praça Washington, Av. New York",
+      "bairro": "Jardim Novo Mundo",
+      "horario": "Ter, 8h às 17h",
+      "tipo": "distribuição"
+    },
+    "... mais 8 pontos"
+  ],
+  "page": { "size": 10, "number": 1, "totalElements": 29, "totalPages": 3 }
+}
+```
+
+Com `sort=bairro,asc` a primeira página começa por Campinas, Faiçalville e Jardim América. Um campo de ordenação que não existe (`sort=xyz`) responde 400.
 
 ### Prints do Swagger
 

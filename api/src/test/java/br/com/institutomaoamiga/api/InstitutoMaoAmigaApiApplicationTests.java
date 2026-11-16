@@ -118,6 +118,48 @@ class InstitutoMaoAmigaApiApplicationTests {
     }
 
     @Test
+    void filtroSemTextoDevolvePaginaDe10OrdenadaPorNome() throws Exception {
+        mvc.perform(get(PONTOS + "/filtro")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(10))
+                .andExpect(jsonPath("$.content[0].nome").value("Centro Comunitário Jardim Goiás"))
+                .andExpect(jsonPath("$.page.size").value(10))
+                .andExpect(jsonPath("$.page.number").value(0))
+                .andExpect(jsonPath("$.page.totalElements").value(org.hamcrest.Matchers.greaterThanOrEqualTo(25)))
+                .andExpect(jsonPath("$.pageable").doesNotExist());
+    }
+
+    @Test
+    void filtroProcuraNomeOuBairroSemDiferenciarMaiusculas() throws Exception {
+        // "SETOR OESTE" está no bairro de 2 pontos.
+        mvc.perform(get(PONTOS + "/filtro").param("filtro", "  SETOR oeste "))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page.totalElements").value(2));
+        // "vaca" está só no nome.
+        mvc.perform(get(PONTOS + "/filtro").param("filtro", "vaca"))
+                .andExpect(jsonPath("$.page.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].nome").value("Ponto Vaca Brava"));
+        mvc.perform(get(PONTOS + "/filtro").param("filtro", "nao-existe"))
+                .andExpect(jsonPath("$.content.length()").value(0));
+    }
+
+    @Test
+    void segundaPaginaEOrdenacaoPorBairro() throws Exception {
+        String pagina0 = mvc.perform(get(PONTOS + "/filtro").param("page", "0"))
+                .andReturn().getResponse().getContentAsString();
+        String pagina1 = mvc.perform(get(PONTOS + "/filtro").param("page", "1"))
+                .andExpect(jsonPath("$.page.number").value(1))
+                .andReturn().getResponse().getContentAsString();
+        List<String> ids0 = JsonPath.read(pagina0, "$.content[*].id");
+        List<String> ids1 = JsonPath.read(pagina1, "$.content[*].id");
+        org.junit.jupiter.api.Assertions.assertTrue(ids1.stream().noneMatch(ids0::contains));
+
+        mvc.perform(get(PONTOS + "/filtro").param("sort", "bairro,asc"))
+                .andExpect(jsonPath("$.content[0].bairro").value("Campinas"));
+        mvc.perform(get(PONTOS + "/filtro").param("sort", "campoInvalido"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void corsLiberado() throws Exception {
         mvc.perform(get(PONTOS).header("Origin", "http://localhost:8081"))
                 .andExpect(header().string("Access-Control-Allow-Origin", "*"));
