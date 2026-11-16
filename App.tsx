@@ -34,18 +34,18 @@ export default function App() {
         <Stack.Screen
           name="HistoricoDoacoes"
           component={HistoricoDoacoesScreen}
-          options={{ title: 'Minhas doacoes' }}
+          options={{ title: 'Minhas doações' }}
         />
         <Stack.Screen
           name="DetalheDoacao"
           component={DetalheDoacaoScreen}
-          options={{ title: 'Detalhe da doacao' }}
+          options={{ title: 'Detalhe da doação' }}
         />
         <Stack.Screen
           name="CadastroDoacao"
           component={CadastroDoacaoScreen}
           options={({ route }) => ({
-            title: route.params?.doacaoId ? 'Editar doacao' : 'Cadastro de doacao',
+            title: route.params?.doacaoId ? 'Editar doação' : 'Registrar doação',
           })}
         />
       </Stack.Navigator>

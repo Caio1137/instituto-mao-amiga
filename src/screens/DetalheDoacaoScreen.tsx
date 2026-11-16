@@ -3,7 +3,7 @@ import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { buscarDoacaoPorId, excluirDoacao } from '../services/doacoesStorage';
+import { buscarDoacaoPorId, excluirDoacao } from '../services/doacoesService';
 import { styles } from '../styles/styles';
 import { formatarData } from '../utils/doacoes';
 import type { Doacao } from '../types/doacao';
