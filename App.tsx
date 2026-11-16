@@ -1,6 +1,7 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import CadastroDoacaoScreen from './src/screens/CadastroDoacaoScreen';
+import CadastroPontoScreen from './src/screens/CadastroPontoScreen';
 import DetalheDoacaoScreen from './src/screens/DetalheDoacaoScreen';
 import DetalhePontoScreen from './src/screens/DetalhePontoScreen';
 import HistoricoDoacoesScreen from './src/screens/HistoricoDoacoesScreen';
@@ -22,6 +23,13 @@ export default function App() {
           name="DetalhePonto"
           component={DetalhePontoScreen}
           options={{ title: 'Detalhe do ponto' }}
+        />
+        <Stack.Screen
+          name="CadastroPonto"
+          component={CadastroPontoScreen}
+          options={({ route }) => ({
+            title: route.params?.pontoId ? 'Editar ponto' : 'Cadastrar ponto',
+          })}
         />
         <Stack.Screen
           name="HistoricoDoacoes"

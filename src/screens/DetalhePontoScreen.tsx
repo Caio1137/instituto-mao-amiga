@@ -5,8 +5,9 @@ import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import DetalhePonto from '../components/DetalhePonto';
 import { ApiError, mensagemErro } from '../services/api';
-import { buscarPontoPorId } from '../services/pontosService';
+import { buscarPontoPorId, excluirPonto } from '../services/pontosService';
 import { styles } from '../styles/styles';
+import { confirmarExclusao } from '../utils/confirmar';
 import type { RootStackParamList } from '../types/navigation';
 import type { Ponto } from '../types/ponto';
 
@@ -20,6 +21,8 @@ export default function DetalhePontoScreen({ navigation, route }: Props) {
   const [erro, setErro] = useState('');
   const [naoEncontrado, setNaoEncontrado] = useState(false);
   const [tentativa, setTentativa] = useState(0);
+  const [excluindo, setExcluindo] = useState(false);
+  const [erroAcao, setErroAcao] = useState('');
 
   // Busca de novo ao voltar da edição, para mostrar os valores novos.
   useFocusEffect(useCallback(() => {
@@ -43,6 +46,22 @@ export default function DetalhePontoScreen({ navigation, route }: Props) {
 
     return () => { ativo = false; };
   }, [pontoId, tentativa]));
+
+  async function excluir() {
+    if (excluindo) return;
+    setExcluindo(true);
+    setErroAcao('');
+
+    try {
+      await excluirPonto(pontoId);
+      navigation.popTo('ListaPontos', { mensagem: 'Ponto excluído com sucesso.' });
+    } catch (falha) {
+      // API desligada ou erro: avisa e o ponto continua na tela.
+      setErroAcao(`Não foi possível excluir. ${mensagemErro(falha)}`);
+    } finally {
+      setExcluindo(false);
+    }
+  }
 
   function renderizarConteudo() {
     if (carregando && !ponto) {
@@ -71,7 +90,30 @@ export default function DetalhePontoScreen({ navigation, route }: Props) {
       );
     }
 
-    return <DetalhePonto ponto={ponto} />;
+    return (
+      <>
+        <DetalhePonto ponto={ponto} />
+        {erroAcao !== '' && <Text accessibilityRole="alert" style={styles.textoErroApi}>{erroAcao}</Text>}
+        <TouchableOpacity
+          accessibilityRole="button"
+          style={[styles.botaoSecundario, excluindo && styles.desabilitado]}
+          onPress={() => navigation.navigate('CadastroPonto', { pontoId })}
+          disabled={excluindo}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.textoBotaoSecundario}>Editar ponto</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          accessibilityRole="button"
+          style={[styles.botaoPerigo, excluindo && styles.desabilitado]}
+          onPress={() => confirmarExclusao('Excluir ponto', `Deseja realmente excluir "${ponto.nome}"?`, () => { void excluir(); })}
+          disabled={excluindo}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.textoBotaoPrincipal}>{excluindo ? 'Excluindo...' : 'Excluir ponto'}</Text>
+        </TouchableOpacity>
+      </>
+    );
   }
 
   return (

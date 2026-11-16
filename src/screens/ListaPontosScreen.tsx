@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import type { ListRenderItem } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -12,9 +12,17 @@ import type { Ponto } from '../types/ponto';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ListaPontos'>;
 
-export default function ListaPontosScreen({ navigation }: Props) {
+export default function ListaPontosScreen({ navigation, route }: Props) {
   const [busca, setBusca] = useState('');
   const lista = usePaginacao(buscarPaginaPontos, busca);
+  const mensagem = route.params?.mensagem;
+
+  // A mensagem de sucesso (ponto cadastrado/excluído) some depois de alguns segundos.
+  useEffect(() => {
+    if (!mensagem) return;
+    const timer = setTimeout(() => navigation.setParams({ mensagem: undefined }), 4000);
+    return () => clearTimeout(timer);
+  }, [mensagem, navigation]);
 
   const abrirPonto = useCallback((ponto: Ponto) => {
     navigation.navigate('DetalhePonto', { pontoId: ponto.id });
@@ -117,6 +125,15 @@ export default function ListaPontosScreen({ navigation }: Props) {
           </TouchableOpacity>
 
           <Text style={styles.secao}>Pontos de coleta e distribuição</Text>
+          {mensagem && <Text accessibilityRole="alert" style={styles.sucesso}>{mensagem}</Text>}
+          <TouchableOpacity
+            accessibilityRole="button"
+            style={styles.botaoSecundario}
+            onPress={() => navigation.navigate('CadastroPonto')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.textoBotaoSecundario}>Cadastrar ponto</Text>
+          </TouchableOpacity>
           <TextInput
             style={styles.inputBusca}
             accessibilityLabel="Buscar pontos"

@@ -305,6 +305,26 @@ export const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: 'bold',
   },
+  opcaoTipo: {
+    alignItems: 'center',
+    flexGrow: 1,
+    minWidth: 120,
+  },
+  espacoSuperior: {
+    marginTop: 16,
+  },
+  desabilitado: {
+    opacity: 0.6,
+  },
+  sucesso: {
+    backgroundColor: '#E8F5E9',
+    borderRadius: 6,
+    color: '#1B5E20',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    padding: 10,
+  },
   avisoCampo: {
     color: '#666',
     fontSize: 13,
