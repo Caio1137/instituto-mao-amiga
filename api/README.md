@@ -2,7 +2,7 @@
 
 API Spring Boot com os pontos de coleta e distribuição e as doações do Instituto Mão Amiga. O app na raiz do repositório consome esta API.
 
-- Java 21 (o projeto também compila com Java 17), Spring Boot 4, Spring Web, Spring Data JPA, H2, Lombok, Bean Validation e Swagger (springdoc-openapi).
+- Java 21, Spring Boot 4, Spring Web, Spring Data JPA, H2, Lombok, Bean Validation e Swagger (springdoc-openapi).
 - Pacotes: `entity`, `repository`, `service`, `controller`, `dto`, `config` e `exception` (tratamento de 400/404).
 
 ## Como executar
@@ -11,7 +11,9 @@ API Spring Boot com os pontos de coleta e distribuição e as doações do Insti
 ./mvnw spring-boot:run
 ```
 
-No Windows: `mvnw.cmd spring-boot:run`. A API sobe em `http://localhost:8085`.
+No Windows: `mvnw.cmd spring-boot:run` no cmd ou `.\mvnw.cmd spring-boot:run` no PowerShell. A API sobe em `http://localhost:8085`.
+
+Com Java 17 instalado (sem o 21), acrescente `-Djava.version=17` ao comando, por exemplo `./mvnw spring-boot:run -Djava.version=17` ou `./mvnw test -Djava.version=17`. No PowerShell use aspas: `.\mvnw.cmd spring-boot:run "-Djava.version=17"`.
 
 - Swagger UI: http://localhost:8085/swagger-ui.html
 - Console do H2: http://localhost:8085/h2-console (JDBC URL `jdbc:h2:file:./data/institutodb`, usuário `sa`, sem senha)

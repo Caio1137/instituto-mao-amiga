@@ -2,7 +2,7 @@
 
 ## Antes de começar
 
-1. Terminal 1: `cd api` e `mvnw.cmd spring-boot:run` (ou `./mvnw spring-boot:run`). Esperar aparecer `Started InstitutoMaoAmigaApiApplication`.
+1. Terminal 1: `cd api` e `.\mvnw.cmd spring-boot:run` no PowerShell (ou `./mvnw spring-boot:run`; só com Java 17, acrescente `"-Djava.version=17"`). Esperar aparecer `Started InstitutoMaoAmigaApiApplication`.
 2. Terminal 2, na raiz: `npm run web`. Abrir http://localhost:8081.
 3. Deixar uma aba com o Swagger aberta: http://localhost:8085/swagger-ui.html.
 

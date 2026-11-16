@@ -15,7 +15,7 @@ A API fica neste mesmo repositório, na pasta [`api/`](api/). É um projeto Spri
 
 ## Como executar
 
-Pré-requisitos: **Java 21** (o projeto também compila com Java 17) e **Node.js 20 ou superior**. O Maven não precisa estar instalado: a API usa o Maven Wrapper (`mvnw`).
+Pré-requisitos: **Java 21** e **Node.js 20 ou superior**. O Maven não precisa estar instalado: a API usa o Maven Wrapper (`mvnw`).
 
 ### 1. API
 
@@ -24,7 +24,9 @@ cd api
 ./mvnw spring-boot:run
 ```
 
-No Windows (PowerShell ou cmd): `mvnw.cmd spring-boot:run`. A API sobe em `http://localhost:8085`.
+No Windows: `mvnw.cmd spring-boot:run` no cmd ou `.\mvnw.cmd spring-boot:run` no PowerShell. A API sobe em `http://localhost:8085`.
+
+Se o computador só tiver o Java 17, acrescente `-Djava.version=17` (no PowerShell, com aspas: `.\mvnw.cmd spring-boot:run "-Djava.version=17"`). O código não usa nada exclusivo do Java 21.
 
 - Swagger: http://localhost:8085/swagger-ui.html
 - Testes da API: `./mvnw test`
