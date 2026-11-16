@@ -10,15 +10,15 @@ export default function DetalhePonto({ ponto }: Props) {
   return (
     <View style={styles.detalhe}>
       <Text style={styles.nomeDetalhe}>{ponto.nome}</Text>
-      <Text style={styles.rotulo}>Endereco</Text>
+      <Text style={styles.rotulo}>Endereço</Text>
       <Text style={styles.textoDetalhe}>{ponto.endereco}</Text>
-      <Text style={styles.rotulo}>Dias e horarios</Text>
+      <Text style={styles.rotulo}>Bairro</Text>
+      <Text style={styles.textoDetalhe}>{ponto.bairro}</Text>
+      <Text style={styles.rotulo}>Dias e horários</Text>
       <Text style={styles.textoDetalhe}>{ponto.horario}</Text>
-      <Text style={styles.rotulo}>O que recebe ou distribui</Text>
-      <Text style={styles.textoDetalhe}>{ponto.atendimento}</Text>
-      <Text style={styles.rotulo}>Coordenadas</Text>
+      <Text style={styles.rotulo}>Tipo</Text>
       <Text style={styles.textoDetalhe}>
-        {ponto.latitude}, {ponto.longitude}
+        {ponto.tipo === 'coleta' ? 'Coleta (recebe doações)' : 'Distribuição (entrega para as famílias)'}
       </Text>
     </View>
   );

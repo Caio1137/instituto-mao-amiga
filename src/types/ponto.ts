@@ -1,10 +1,14 @@
-// Espelha o record PontoResponse da API (api/.../dto/PontoResponse.java), campo a campo.
+// Espelha o record PontoResponseDTO da API (api/.../dto/PontoResponseDTO.java), campo a campo.
+export type TipoPonto = 'coleta' | 'distribuição';
+
 export type Ponto = {
-  id: number;
+  id: string;
   nome: string;
   endereco: string;
+  bairro: string;
   horario: string;
-  atendimento: string;
-  latitude: number;
-  longitude: number;
+  tipo: TipoPonto;
 };
+
+// Corpo do POST e do PUT (PontoRequestDTO): tudo menos o id.
+export type DadosPonto = Omit<Ponto, 'id'>;

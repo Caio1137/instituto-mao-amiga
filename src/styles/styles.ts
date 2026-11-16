@@ -89,13 +89,45 @@ export const styles = StyleSheet.create({
     marginTop: 4,
   },
   card: {
+    alignItems: 'flex-start',
     backgroundColor: '#FFFFFF',
     borderColor: '#DDD',
     borderRadius: 6,
     borderWidth: 1,
+    flexDirection: 'row',
     marginBottom: 12,
     minHeight: 44,
     padding: 12,
+  },
+  cardConteudo: {
+    flex: 1,
+  },
+  etiquetaTipo: {
+    alignSelf: 'flex-start',
+    borderRadius: 4,
+    fontSize: 13,
+    fontWeight: 'bold',
+    marginTop: 6,
+    overflow: 'hidden',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  etiquetaColeta: {
+    backgroundColor: '#E8F5E9',
+    color: '#1B5E20',
+  },
+  etiquetaDistribuicao: {
+    backgroundColor: '#E3F2FD',
+    color: '#0D47A1',
+  },
+  rodapeLista: {
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  textoRodape: {
+    color: '#555',
+    fontSize: 14,
+    textAlign: 'center',
   },
   acao: {
     color: '#1B5E20',

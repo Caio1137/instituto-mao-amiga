@@ -62,8 +62,7 @@ export default function CadastroDoacaoScreen({ navigation, route }: Props) {
     setErroPontos('');
 
     try {
-      const pagina = await listarPontos();
-      setPontos(pagina.content);
+      setPontos(await listarPontos());
     } catch {
       setPontos([]);
       setErroPontos('Nao foi possivel carregar os pontos da API.');

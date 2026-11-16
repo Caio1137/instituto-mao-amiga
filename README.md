@@ -43,7 +43,9 @@ npm install
 npm run web
 ```
 
-Para usar no celular com o Expo Go, troque `localhost` pelo IP do computador na constante `API_URL` de [`src/services/api.ts`](src/services/api.ts) e rode `npx expo start`. O celular precisa estar na mesma rede do computador.
+Os testes da entrega foram feitos **no navegador** (`npm run web`), com a API em `http://localhost:8085`.
+
+Para usar no celular com o Expo Go, troque `localhost` pelo IP do computador na constante `API_URL` de [`src/services/api.ts`](src/services/api.ts) (ex.: `http://192.168.0.10:8085/api/v1`) e rode `npx expo start`. O celular precisa estar na mesma rede do computador. No celular, `localhost` é o próprio celular, por isso não funciona.
 
 Para conferir os tipos:
 

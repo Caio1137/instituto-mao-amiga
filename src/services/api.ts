@@ -1,8 +1,11 @@
-// Endereço da API dos pontos (pasta api/ deste repositório).
-// No navegador e no emulador iOS, localhost funciona. No celular com Expo Go,
-// troque localhost pelo IP do computador na rede (ex.: http://192.168.0.10:8085).
-const API_URL = 'http://localhost:8085';
+// Único arquivo do app que chama fetch. A URL do servidor fica só aqui.
+// No navegador e no emulador, localhost funciona. No celular com Expo Go, troque
+// localhost pelo IP do computador na rede (ex.: http://192.168.0.10:8085/api/v1).
+export const API_URL = 'http://localhost:8085/api/v1';
 
+const TEMPO_LIMITE_MS = 10000;
+
+/** Erro de uma chamada à API. status 0 = não conseguiu falar com o servidor. */
 export class ApiError extends Error {
   readonly status: number;
 
@@ -13,12 +16,59 @@ export class ApiError extends Error {
   }
 }
 
-export async function getJson<T>(caminho: string): Promise<T> {
-  const resposta = await fetch(`${API_URL}${caminho}`);
+export function mensagemErro(erro: unknown): string {
+  return erro instanceof ApiError
+    ? erro.message
+    : 'Não foi possível concluir a operação. Tente novamente.';
+}
+
+async function requisicao<T>(metodo: string, caminho: string, corpo?: unknown): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TEMPO_LIMITE_MS);
+  let resposta: Response;
+
+  try {
+    resposta = await fetch(`${API_URL}${caminho}`, {
+      method: metodo,
+      signal: controller.signal,
+      headers: corpo === undefined ? undefined : { 'Content-Type': 'application/json' },
+      body: corpo === undefined ? undefined : JSON.stringify(corpo),
+    });
+  } catch {
+    throw new ApiError(0, 'Não foi possível conectar à API. Verifique se ela está ligada e se o endereço do servidor está certo.');
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (!resposta.ok) {
-    throw new ApiError(resposta.status, `A API respondeu ${resposta.status} para ${caminho}.`);
+    // A API devolve { status, mensagem } nos erros 400 e 404.
+    const dados = (await resposta.json().catch(() => null)) as { mensagem?: string } | null;
+    const mensagem = resposta.status >= 500
+      ? 'A API teve um erro interno. Tente novamente em instantes.'
+      : dados?.mensagem ?? `A API respondeu ${resposta.status}.`;
+    throw new ApiError(resposta.status, mensagem);
+  }
+
+  // DELETE responde 204 sem corpo.
+  if (resposta.status === 204) {
+    return undefined as T;
   }
 
   return (await resposta.json()) as T;
+}
+
+export function get<T>(caminho: string): Promise<T> {
+  return requisicao<T>('GET', caminho);
+}
+
+export function post<T>(caminho: string, corpo: unknown): Promise<T> {
+  return requisicao<T>('POST', caminho, corpo);
+}
+
+export function put<T>(caminho: string, corpo: unknown): Promise<T> {
+  return requisicao<T>('PUT', caminho, corpo);
+}
+
+export function del(caminho: string): Promise<void> {
+  return requisicao<void>('DELETE', caminho);
 }
