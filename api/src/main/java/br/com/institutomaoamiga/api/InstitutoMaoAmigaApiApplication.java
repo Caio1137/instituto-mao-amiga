@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @OpenAPIDefinition(info = @Info(title = "API Instituto Mão Amiga", version = "v1",
-        description = "Pontos de coleta e distribuição do Instituto Mão Amiga."))
+        description = "Pontos de coleta e distribuição e doações do Instituto Mão Amiga."))
 public class InstitutoMaoAmigaApiApplication {
 
     public static void main(String[] args) {
