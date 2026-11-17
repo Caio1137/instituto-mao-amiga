@@ -17,6 +17,8 @@ A API fica neste mesmo repositório, na pasta [`api/`](api/). É um projeto Spri
 
 Pré-requisitos: **Java 21** e **Node.js 20 ou superior**. O Maven não precisa estar instalado: a API usa o Maven Wrapper (`mvnw`).
 
+Passo a passo para um computador novo, problemas comuns e onde mexer em cada parte: [docs/continuar-no-notebook.md](docs/continuar-no-notebook.md).
+
 ### 1. API
 
 ```bash
