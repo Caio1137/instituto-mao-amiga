@@ -24,7 +24,7 @@ const TIPOS: { valor: TipoPonto; rotulo: string }[] = [
   { valor: 'distribuição', rotulo: 'Distribuição' },
 ];
 
-// O mesmo formulário cadastra (sem pontoId) e edita (com pontoId), como na Compre Bem.
+// Sem pontoId, cadastra um ponto. Com pontoId, preenche o formulário para editar.
 export default function CadastroPontoScreen({ navigation, route }: Props) {
   const pontoId = route.params?.pontoId;
   const [nome, setNome] = useState('');

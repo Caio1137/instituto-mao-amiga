@@ -1,7 +1,7 @@
 // Único arquivo do app que chama fetch. A URL do servidor fica só aqui.
-// No navegador e no emulador, localhost funciona. No celular com Expo Go, troque
-// localhost pelo IP do computador na rede (ex.: http://192.168.0.10:8085/api/v1).
-export const API_URL = 'http://localhost:8085/api/v1';
+// O .env.local permite trocar o IP para usar o celular sem editar o código.
+// No celular, usamos o IP do computador; localhost aponta para o próprio celular.
+export const API_URL = (process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8085/api/v1').replace(/\/$/, '');
 
 const TEMPO_LIMITE_MS = 10000;
 
